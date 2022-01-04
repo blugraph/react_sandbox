@@ -1,0 +1,101 @@
+#https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html
+
+version: 0.2
+
+env:
+  variables:
+    # build_version: "0.1"
+    AWS_ECR: 433339126986.dkr.ecr.ap-southeast-1.amazonaws.com
+    ECR_REPO: 433339126986.dkr.ecr.ap-southeast-1.amazonaws.com/bgsg/cpn-sign-api-test
+    CONTAINER_NAME: cpn-sign-api-test
+    #ECR_REPO: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/bgsg/cpn-sign-api-test
+    NODE_ENV: production
+    UseDDB: true
+    SOCKET_PATH: ''
+    # DB_DATABASENAME: cpn-sign--test
+    DB_DATABASENAME: cpn_sign_test
+  # secrets-manager:  
+  #   # SECRET: /CodeBuild/BlsApi/RDS
+  #   DB_HOST: /CodeBuild/BlsApi/RDS:host
+  #   DB_USER: /CodeBuild/BlsApi/RDS:username
+  #   DB_PASSWORD: /CodeBuild/BlsApi/RDS:password
+    # GITSSH: git-ssh-key
+  # parameter-store:
+  #   DBSERVER: /CodeBuild/BlsApi/RDS
+
+phases:
+  install:
+    commands:
+      - echo Installing packages..
+      # - echo apt install -y git
+      # - apt-get install -y jq mysql-client
+    runtime-versions:
+      # python: 3.7
+      nodejs: 12
+
+  pre_build:
+    commands:
+      - curr_working_dir=`pwd`
+      - echo ${curr_working_dir}
+      - echo ${GIT_BRANCH}
+      - echo ${COMMIT_ID}
+      #- IMAGE_TAG=$(git rev-parse --short ${COMMIT_ID})
+      - IMAGE_TAG=$(echo $COMMIT_ID | head -c 8)
+      - echo ${IMAGE_TAG}
+      # - DBSERVER=$(echo $SECRET | jq -r '.host')
+      # https://malsouli.medium.com/10-smart-ways-to-use-aws-codebuild-22a8ee0d9302
+      - |
+        if [ ${GIT_BRANCH} = "main" ]; then
+          DB_DATABASENAME="cpn_sign";
+          ECR_REPO="${AWS_ECR}/bgsg/cpn-sign-api";
+          CONTAINER_NAME="cpn-sign-api";
+        elif [ ${GIT_BRANCH} = "test" ]; then
+          DB_DATABASENAME="cpn_sign_test";
+          ECR_REPO="${AWS_ECR}/bgsg/cpn-sign-api-test";
+          CONTAINER_NAME="cpn-sign-api-test";
+        elif [ ${GIT_BRANCH} = "dev" ]; then
+          SQL_QUERY="DROP DATABASE \`${BRANCH}\`;";
+        else
+          echo "Default test branch";
+        fi      
+      - echo ${ECR_REPO}
+      - echo ${DB_HOST}
+      - echo ${AWS_DEFAULT_REGION}
+      # - echo $GITSSH > ~/.ssh/id_rsa
+      #- docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASS
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ECR}
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - cd server
+      # Update modules.
+      # - npm install
+      - yarn install
+      #- IMAGE_TAG=`echo $CODEBUILD_BUILD_ID | awk -F ':' '{print $2}'`
+      # The local build image name can be different than container name.
+      - DOCKER_BUILDKIT=1 docker build -t bgsg/${CONTAINER_NAME} --build-arg NPM_TOKEN=1234 --target=prod .
+      - docker tag bgsg/${CONTAINER_NAME} ${ECR_REPO}:${IMAGE_TAG}
+      - cd ..
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image..
+      - docker push ${ECR_REPO}:${IMAGE_TAG}
+      - echo Completed pushing Docker image. Deploying Docker image to AWS Fargate on `date`
+      # Create a artifacts file that contains the name and location of the image
+      # pushed to ECR. This will be used by AWS CodePipeline to automate
+      # deployment of this specific container to Amazon ECS.
+      - printf '[{"name":"%s","imageUri":"%s"}]' ${CONTAINER_NAME} ${ECR_REPO}:${IMAGE_TAG} > imagedefinitions.json
+      - cat imagedefinitions.json
+      - echo Build completed on `date`
+artifacts:
+  # Indicate that the created imagedefinitions.json file created on the previous
+  # line is to be referenceable as an artifact of the build execution job.
+  # base-directory: outputDirectory
+  # files:
+  #   - '**/*'
+  # files: imagedefinitions.json
+  files: 
+    - imagedefinitions.json

@@ -11,23 +11,23 @@ a {
 .sidebarNavLink {
   .nav-item {
     font-size: 16px;
-    color: grey;
+    color: $sidebar-menu-item-color;
   }
   a {
-    color: grey;
+    color: $sidebar-menu-item-color;
   }
   .nav-link:focus,
   .nav-link:hover {
-    color: grey;
+    color: $sidebar-menu-item-color;
   }
   .dropdown-menu {
     border: none;
     font-size: 16px;
-    color: grey;
+    color: $sidebar-menu-item-color;
     padding: 0rem 1rem;
     .dropdown-item.active,
     .dropdown-item:active {
-      color: grey;
+      color: $sidebar-menu-item-color;
       text-decoration: none;
       background-color: #fff;
     }

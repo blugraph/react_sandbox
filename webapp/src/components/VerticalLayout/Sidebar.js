@@ -47,11 +47,7 @@ export default function Sidebar(props) {
           <Nav.Item style={{lineHeight:"3rem",paddingLeft:"0.9rem"}}> <i className="fas fa-people-arrows"></i><span>&nbsp;Projects </span></Nav.Item>
           <Nav.Item style={{lineHeight:"3rem",paddingLeft:"0.9rem"}}> <i className="fas fa-map-marked-alt"></i><span>&nbsp;Map</span> </Nav.Item>
           <Nav.Item style={{lineHeight:"3rem",paddingLeft:"0.9rem"}}> <i className="fas fa-cog"></i><span>&nbsp;Settings</span> </Nav.Item>
-          <NavDropdown title={
-                <span>
-                    <i className='fas fa-user-shield'></i> Administrator
-                </span>
-            } id="nav-dropdown">
+          <NavDropdown title={<><i className='fas fa-user-shield'></i><span>Administrator</span></> } id="nav-dropdown">
             <NavDropdown.Item eventKey="4.1">Action</NavDropdown.Item>
             <NavDropdown.Item eventKey="4.2">Another action</NavDropdown.Item>
             <NavDropdown.Item eventKey="4.3">Something else here</NavDropdown.Item>

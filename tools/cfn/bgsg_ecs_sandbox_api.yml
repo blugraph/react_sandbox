@@ -26,7 +26,7 @@ Metadata:
 Parameters:
   ServiceName:
     Type: String
-    Default: sand-api
+    Default: sandbox-api
   ClusterName:
     Type: String
     Default: bgsg-cluster
@@ -46,7 +46,7 @@ Parameters:
     Default: 9000
   SvcSubdomain:
     Type: String
-    Default: 'sand-api'
+    Default: 'sandbox-api'
   ELBListenerPrio:
     Type: Number
     Default: 9

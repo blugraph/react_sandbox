@@ -1,0 +1,51 @@
+= TODOs
+Author Name <author@tty.org>
+v1.0, 2020-01-01
+:imagesdir: ./images
+:iconsdir: ./icons
+:stylesdir: ./styles
+:scriptsdir: ./js
+:hardbreaks:
+:toc:
+:toc-placement!:
+:sectnums:
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+:icons: font
+
+toc::[]
+
+This is a preamble.
+
+== Uncat
+
+NOTE: Use Asciidoc to format the document.
+
+// enable callout bubbles by adding `:icons: font` to the document header
+[,ruby]
+----
+puts 'Hello, World!' # <1>
+----
+<1> Prints `Hello, World!` to the console.
+
+
+====
+Here is an example
+====
+
+
+____
+Here is a quote
+____
+
+
+.Plant Monitoring System using,
+* AWS IoT, 
+* Arduino, 
+* IAM, DynamoDB, SNS, (AWS CLI), 
+* MQTT,

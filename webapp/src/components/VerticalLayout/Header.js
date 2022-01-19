@@ -1,6 +1,7 @@
 import {React,useEffect,useState} from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/images/logo_new.png";
+import HeaderWithIcons from "../HeaderWithIcons";
 import ProfileMenu from "../ProfileMenu";
 
 export default function Header(props) {
@@ -26,15 +27,16 @@ export default function Header(props) {
               <span className="logo-sm"><img src={logo} alt="" height="22" /></span>
             </Link>
           </div>
-
           <button type="button" onClick={() => { tToggle(); }} className="btn btn-sm px-3 font-size-16 header-item " id="vertical-menu-btn"><i className="fa fa-fw fa-bars" /></button>
-
           <form className="app-search d-none d-lg-block">
             <div className="position-relative">
               <input type="text" className="form-control" placeholder="Search"/>
               <span className="bx bx-search-alt" />
             </div>
           </form>
+        </div>
+        <div className="d-flex">
+          <HeaderWithIcons {...props}/>
         </div>
         <div className="d-flex">
           <div className="dropdown d-inline-block d-lg-none ms-2">
@@ -56,8 +58,7 @@ export default function Header(props) {
               </form>
             </div>
           </div>
-        <ProfileMenu/>
-
+          <ProfileMenu/>
         </div>
       </div>
     </header>

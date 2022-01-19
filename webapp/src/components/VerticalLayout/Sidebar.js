@@ -1,9 +1,12 @@
 import { Nav, NavDropdown } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo_new.png";
 import logoBg from "../../assets/images/bg_full.jpeg";
+import { useToggle } from "../ToggleContext";
 
 export default function Sidebar(props) {
+  let navigate = useNavigate();
+  let user = useToggle()
   return (
     <div className="vertical-menu">
       <div className="navbar-brand-box">
@@ -43,10 +46,10 @@ export default function Sidebar(props) {
           <li></li>
         </ul> */}
          <Nav activeKey="1" className="flex-column sidebarNavLink">
-          <Nav.Item style={{lineHeight:"3rem",paddingLeft:"0.9rem"}}> <i className="fas fa-home"></i> <span>Dashboards</span></Nav.Item>
-          <Nav.Item style={{lineHeight:"3rem",paddingLeft:"0.9rem"}}> <i className="fas fa-people-arrows"></i><span>&nbsp;Projects </span></Nav.Item>
-          <Nav.Item style={{lineHeight:"3rem",paddingLeft:"0.9rem"}}> <i className="fas fa-map-marked-alt"></i><span>&nbsp;Map</span> </Nav.Item>
-          <Nav.Item style={{lineHeight:"3rem",paddingLeft:"0.9rem"}}> <i className="fas fa-cog"></i><span>&nbsp;Settings</span> </Nav.Item>
+          <Nav.Item style={{lineHeight:"3rem",paddingLeft:"0.9rem"}}> <Nav.Link onClick={()=>{user.setDateVal();navigate({pathname:'/'},{replace:true});}}> <i className="fas fa-home"></i> <span>Dashboards</span></Nav.Link></Nav.Item>
+          <Nav.Item style={{lineHeight:"3rem",paddingLeft:"0.9rem"}}> <Nav.Link onClick={()=>{user.setDateVal();navigate({pathname:'/projects'},{replace:true});}}> <i className="fas fa-people-arrows"></i><span>&nbsp;Projects </span></Nav.Link></Nav.Item>
+          <Nav.Item style={{lineHeight:"3rem",paddingLeft:"0.9rem"}}> <Nav.Link onClick={()=>{user.setDateVal();navigate({pathname:'/maps'},{replace:true});}}> <i className="fas fa-map-marked-alt"></i><span>&nbsp;Map</span> </Nav.Link></Nav.Item>
+          <Nav.Item style={{lineHeight:"3rem",paddingLeft:"0.9rem"}}> <Nav.Link onClick={()=>{user.setDateVal();navigate({pathname:'/settings'},{replace:true});}}> <i className="fas fa-cog"></i><span>&nbsp;Settings</span> </Nav.Link></Nav.Item>
           <NavDropdown title={<><i className='fas fa-user-shield'></i><span>Administrator</span></> } id="nav-dropdown">
             <NavDropdown.Item eventKey="4.1">Action</NavDropdown.Item>
             <NavDropdown.Item eventKey="4.2">Another action</NavDropdown.Item>

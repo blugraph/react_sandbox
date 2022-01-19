@@ -4,11 +4,11 @@ import TableList from "./TableList";
 import { useToggle } from './ToggleContext';
 import { MapContainer, TileLayer, Marker, useMap, Tooltip, FeatureGroup } from 'react-leaflet'
 import "leaflet/dist/leaflet.css";
-export default function Dashboard(props) {
+export default function MapsContainer(props) {
   const user = useToggle();
   return (
     <>
-      <Breadcrumbs title="Dashboards" breadcrumbItem="Dashboards" />
+      <Breadcrumbs title="Maps" breadcrumbItem="Maps" />
       {!user.toggleValue ?<Map/>:<TableList />}
     </>
   );

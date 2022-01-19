@@ -1,18 +1,9 @@
-import React, { useState } from "react";
-import { Container } from "react-bootstrap";
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import Dashboard from "./components/Dashboard";
+import React from "react";
 import './assets/scss/Layout.scss';
-import TableList from "./components/TableList";
+import Route from "./routes/Route";
 
 const App = () => (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/tables" element={<TableList />} />
-      </Routes>
-    </BrowserRouter>
-
+    <Route />
 );
 
 export default App;

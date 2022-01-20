@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react"
 import PropTypes from 'prop-types'
-import {
-  Dropdown,
-} from "react-bootstrap"
-
-import { withRouter, Link } from "react-router-dom"
+import { Dropdown} from "react-bootstrap"
+import { withRouter, Link ,useNavigate} from "react-router-dom"
 // users
 import user1 from "../assets/images/avatar-1.jpg"
+import { useToggle } from "./ToggleContext"
 
 export default function ProfileMenu (props){
   const [menu, setMenu] = useState(false)
   const [username, setusername] = useState("Admin")
+  const navigate = useNavigate();
+  let user = useToggle();
 
   return (
     <>
@@ -25,7 +25,7 @@ export default function ProfileMenu (props){
           <Dropdown.Item tag="a" href="/profile"> <i className="align-middle me-1 ">Profile</i> </Dropdown.Item>
           {/* <Dropdown.Item > <i className="align-middle me-1"> Settings</i> </Dropdown.Item> */}
           <div className="dropdown-divider"/>
-          <Link to="/logout" className="dropdown-item">
+          <Link to="/" className="dropdown-item" onClick={()=>{user.setDateVal();navigate('/login'); localStorage.clear();}}>
             <i className="align-middle me-1 text-danger">Logout</i>
           </Link>
         </Dropdown.Menu>

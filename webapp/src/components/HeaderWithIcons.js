@@ -1,17 +1,14 @@
 import React, { useState } from "react";
 import { Form } from "react-bootstrap";
-import Dashboard from "./Dashboard";
-import TableList from "./TableList";
-import { ToggleContext,useToggle } from './ToggleContext';
+import { useToggle } from './ToggleContext';
 
 
 export default function HeaderWithIcons(props) {
   const user = useToggle();
-  // console.log('user',user)
   let pathName = window.location.pathname;
   let showHeaderIcons;
   switch (pathName) {
-    case "/":
+    case "/dashboard":
       showHeaderIcons = <DashBoardIcons />;
       break;
     case "/maps":

@@ -49,3 +49,38 @@ ____
 * Arduino, 
 * IAM, DynamoDB, SNS, (AWS CLI), 
 * MQTT,
+
+== Auzre AD (Office365) with Cognito
+.Azure options
+. App Registration / SAML
+. App Registration / OIDC
+. Enterprise App/SSO/SAML
+. AWS Blog, eg.
+
+=== App Registration / SAML
+.(Cognito)
+* Create a cognito pool. Provide a domain name for response.
+* Note down the userpoolid.
+
+.(Azure AD)
+* (https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RegisteredApps)
+* From Endpoints copy _Federation metadata document_. This will be used in SAML config of Cognito.
+* New registration
+** Give a name
+** For supported account types, select the default (Single tenant)
+** For redirect URI, select platform as (Web or SPA), then enter the Cognito response URL as Redirect URL (Reply URL). (https://{userpool_domain_name}/saml2/idpresponse)
+* Go to manifest file (sidebar menu, last item), enter the App ID under _identifierUris_ in the format _"urn:amazon:cognito:sp:POOLID"_.
+
+.(Cognito)
+* Under userpool, federated identities (Sign-In experience in the new UI), click on SAML.
+* Select manual option and enter the manifest URL. Provide a friendly name for this identity (Will appear on Hosted UI).
+* Under attribute mapping, map the SAML attributes to userpool attributes (eg, https://www.terminalbytes.com/azure-ad-integration-as-an-idp-with-aws-cognito/).
+====
+http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name -> Name
+http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname -> Given Name
+http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname -> Family Name
+http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress -> Email
+====
+* Modify the Callback URLs and Sign Out URLs fields to be your app's login and logout URLs.
+* To test either use Hosted UI or create a button for the URL, "https://FRIENDLYDOMAINPREFIX.auth.REGION.amazoncognito.com/oauth2/authorize?identity_provider=FRIENDLYPROVIDERNAME&redirect_uri=http://localhost:3000&response_type=TOKEN&client_id=CLIENTID&scope=aws.cognito.signin.user.admin email openid phone profile
+"

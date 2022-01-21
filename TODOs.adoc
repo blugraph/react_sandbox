@@ -57,23 +57,25 @@ ____
 . Enterprise App/SSO/SAML
 . AWS Blog, eg.
 
-=== App Registration / SAML
+=== App Registration / SAML / OIDC
 .(Cognito)
 * Create a cognito pool. Provide a domain name for response.
 * Note down the userpoolid.
 
 .(Azure AD)
 * (https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RegisteredApps)
-* From Endpoints copy _Federation metadata document_. This will be used in SAML config of Cognito.
+* (SAML) From Endpoints copy _Federation metadata document_. This will be used in SAML config of Cognito.
 * New registration
 ** Give a name
 ** For supported account types, select the default (Single tenant)
-** For redirect URI, select platform as (Web or SPA), then enter the Cognito response URL as Redirect URL (Reply URL). (https://{userpool_domain_name}/saml2/idpresponse)
+** (SAML) For redirect URI, select platform as (Web or SPA), then enter the Cognito response URL as Redirect URL (Reply URL). (https://{userpool_domain_name}/saml2/idpresponse)
+** (OIDC) For redirect URI, select platform as (Web), then enter Redirect URL as (https://{userpool_domain_name}/oauth2/idpresponse). Additional URLs for different types can be provided using the link "Add URI".
 * Go to manifest file (sidebar menu, last item), enter the App ID under _identifierUris_ in the format _"urn:amazon:cognito:sp:POOLID"_.
+* (OIDC) Go to App Registration > Your App > Certificates and secrets -> Create a new client secret and copy (Value, not secret ID). Get the Application/Client ID from the Overview link.
 
-.(Cognito)
+.(Cognito/SAML)
 * Under userpool, federated identities (Sign-In experience in the new UI), click on SAML.
-* Select manual option and enter the manifest URL. Provide a friendly name for this identity (Will appear on Hosted UI).
+* Select manual option and enter the manifest URL. Provide a friendly name for this identity (Will appear on Hosted UI for Clients).
 * Under attribute mapping, map the SAML attributes to userpool attributes (eg, https://www.terminalbytes.com/azure-ad-integration-as-an-idp-with-aws-cognito/).
 ====
 http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name -> Name
@@ -81,6 +83,26 @@ http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname -> Given Name
 http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname -> Family Name
 http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress -> Email
 ====
+* Go to App Client Settings (App Integration->List->Client in new UI), enable the new Identity.
 * Modify the Callback URLs and Sign Out URLs fields to be your app's login and logout URLs.
 * To test either use Hosted UI or create a button for the URL, "https://FRIENDLYDOMAINPREFIX.auth.REGION.amazoncognito.com/oauth2/authorize?identity_provider=FRIENDLYPROVIDERNAME&redirect_uri=http://localhost:3000&response_type=TOKEN&client_id=CLIENTID&scope=aws.cognito.signin.user.admin email openid phone profile
 "
+.(Cognito/OIDC)
+* Under userpool, federated identities (Sign-In experience in the new UI), click on OIDC.
+* Enter the App ID and secret. Provide a friendly name for this identity.
+* Enter any additional scopes (openid profile email).
+* For attributes, select auto option and provide the Issuer URL as, https://login.microsoftonline.com/{tenant_id}/v2.0. Get the tenant ID from AzureAD, under properties link. Other options are _common, organizations, consumers_.
+** https://docs.microsoft.com/en-us/azure/app-service/configure-authentication-provider-aad
+** https://docs.microsoft.com/en-us/powerapps/maker/portals/configure/configure-openid-settings
+** https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-oidc-idp.html
+* Under attribute mapping, map the SAML attributes to userpool attributes (eg, https://www.terminalbytes.com/azure-ad-integration-as-an-idp-with-aws-cognito/).
+====
+name > Name
+preferred_username > Preferred User Name
+unique_name > Given Name
+email > Email
+sub > Username
+====
+* Go to App Client Settings (App Integration->List->Client in new UI), enable the new Identity.
+* Modify the Callback URLs and Sign Out URLs fields to be your app's login and logout URLs.
+* To test use the Hosted UI.

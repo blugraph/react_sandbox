@@ -49,3 +49,6 @@ ____
 * Arduino, 
 * IAM, DynamoDB, SNS, (AWS CLI), 
 * MQTT,
+
+.Todo List 
+https://blugraphcom-my.sharepoint.com/:x:/r/personal/noor_blugraph_com/_layouts/15/Doc.aspx?sourcedoc=%7B42C77012-6F68-437D-AAAC-D8A229E3C321%7D&file=Book%203.xlsx&action=editnew&mobileredirect=true&wdNewAndOpenCt=1642763896980&ct=1642763896980&wdPreviousSession=0df0383a-05b7-458b-81ed-3e6b23750927&wdOrigin=OFFICECOM-WEB.START.NEW&cid=8c91e61e-703c-4f6e-a835-f03fa4a1643e

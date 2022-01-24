@@ -44,11 +44,10 @@ Here is a quote
 ____
 
 
-.Plant Monitoring System using,
-* AWS IoT, 
-* Arduino, 
-* IAM, DynamoDB, SNS, (AWS CLI), 
-* MQTT,
+.TODOs
+* In important browser conole log messages add timestamp in the local time format YYYY-DD-MM hh:mm:ss, 
+* Review MQTT connect options, 
+* Try Amplify Hosted UI.
 
 == Auzre AD (Office365) with Cognito
 .Azure options

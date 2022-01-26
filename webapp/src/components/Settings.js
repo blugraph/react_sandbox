@@ -64,7 +64,7 @@ export default function Settings(props) {
       </div>
       {/* <br />
       <br /> */}
-      <div className="" style={{ background: "#d3d3d33d", border: "1px solid lightgrey", padding: "1rem" }}>
+      <div className="">
         {filterValue === "custom" && <Input/>}
         <div style={{ display: filterValue === "custom" ? "inline-flex" : "none" }} className="col-sm-12">
           <label className="row"  onClick={() => { setOpen(true) }}>

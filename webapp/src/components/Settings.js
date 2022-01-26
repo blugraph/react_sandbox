@@ -43,10 +43,11 @@ export default function Settings(props) {
   }
   console.log('open', open)
 
-  const Input = ({onChange, placeholder, value, isSecure, id, onClick}) => (
+  const Input = () => (
     <>
-    <button type="button" class="btn btn-outline-primary btn-sm m-3" style={{ margin: "0px 10px" }} onClick={() => { setFilterValue("lastMonth"); }}>Apply</button>
-    <button type="button" class="btn btn-outline-primary btn-sm m-3" style={{ margin: "0px 10px" }} onClick={() => { setFilterValue("lastMonth"); }}>Cancel</button>
+    <button type="button" class="btn btn-primary btn-sm " style={{ margin: "0px 10px" }} onClick={() => { customFilter() }}>Apply</button>
+    <button type="button" class="btn btn-outline-primary btn-sm" style={{ margin: "0px 10px" }} onClick={() => { setStartDate(new Date());setEndDate(new Date());}}>Clear</button>
+    <button type="button" class="btn btn-outline-primary btn-sm" style={{ margin: "10px 10px" }} onClick={() => { setFilterValue("") }}>Cancel</button>
     </>
   );
   return (
@@ -68,7 +69,7 @@ export default function Settings(props) {
         {filterValue === "custom" && <Input/>}
         <div style={{ display: filterValue === "custom" ? "inline-flex" : "none" }} className="col-sm-12">
           <label className="row"  onClick={() => { setOpen(true) }}>
-            <div className="col-sm-6" style={{marginRight:"-1rem"}}>
+            <div className="col-md-6 datepicker-start" style={{marginRight:"-1rem"}}>
               <DatePicker
                 selected={startDate}
                 onChange={(date) => {
@@ -82,13 +83,15 @@ export default function Settings(props) {
                 closeOnScroll={true} // Close on scroll
                 showTimeInput
                 placeholderText="start date"
-                minDate={new Date()}
+                // minDate={new Date()}
                 open={open}
                 fixedHeight
+                name="start date"
+                className="datepicker-start"
               />
             </div>
-            <div className="col-sm-6">
-              <DatePicker
+            <div className="col-md-6 datepicker-end">
+              <DatePicker1
                 selected={endDate}
                 onChange={(date) => { setEndDate(date); setOpen(false) }}
                 startDate={startDate}
@@ -101,12 +104,9 @@ export default function Settings(props) {
                 placeholderText="End date"
                 open={open}
                 fixedHeight
+                className="datepicker-end"
               />
             </div>
-            {/* <div className="col-sm-2">
-              <button type="button" class="btn btn-outline-primary btn-sm col-sm-6" style={{ margin: "0px 10px" }} onClick={() => { setFilterValue("lastMonth"); }}>Last Month</button>
-              <button type="button" class="btn btn-outline-primary btn-sm col-sm-6" style={{ margin: "0px 10px" }} onClick={() => { setFilterValue("lastMonth"); }}>Last Month</button>
-            </div> */}
           </label>
           {/* <Button className="col-sm-4" onClick={()=>{customFilter()}} > Click here to check the unix time</Button> */}
           <br />

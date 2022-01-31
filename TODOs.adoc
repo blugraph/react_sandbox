@@ -60,4 +60,3 @@ ____
 ** React-bootstrap.
 * BluSilver
 * Geotracker-> GeoAuth.
-

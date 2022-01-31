@@ -1,4 +1,25 @@
 = react_sandbox
+Author Name <author@tty.org>
+v1.0, 2020-01-01
+:imagesdir: ./images
+:iconsdir: ./icons
+:stylesdir: ./styles
+:scriptsdir: ./js
+:hardbreaks:
+:toc:
+:toc-placement!:
+:sectnums:
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+:icons: font
+
+toc::[]
+
 Playground for React based app
 
 == Auzre AD (Office365) with Cognito
@@ -59,7 +80,7 @@ sub > Username
 * Modify the Callback URLs and Sign Out URLs fields to be your app's login and logout URLs.
 * To test use the Hosted UI.
 
-== Enterprise App
+=== Enterprise App
 .AzureAD
 * (https://aws.amazon.com/blogs/security/how-to-set-up-amazon-cognito-for-federated-authentication-using-azure-ad/)
 * New Enterprise Applications -> New App -> Create your own -> “Non-gallery application” type application.

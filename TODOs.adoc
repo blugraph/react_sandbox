@@ -44,6 +44,24 @@ Here is a quote
 ____
 
 
+== React Tasks
+* c7wl, c8wl, migration
+* c3fl?
+* emmp
+* India websites
+* bgvisit revamp
+* Lightning website
+* Test framework
+* Maintenance app
+* Admin tool
+* BluSilver
+* MoE App
+* Car wash
+* EduReact
+* BIMA
+
+
+
 .TODOs
 //* In important browser conole log messages add timestamp in the local time format YYYY-DD-MM hh:mm:ss, 
 * Review MQTT connect options, 

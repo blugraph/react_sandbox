@@ -41,9 +41,9 @@ Playground for React based app
 ** Give a name
 ** For supported account types, select the default (Single tenant)
 ** (SAML) For redirect URI, select platform as (Web or SPA), then enter the Cognito response URL as Redirect URL (Reply URL). (https://{userpool_domain_name}/saml2/idpresponse)
-** (OIDC) For redirect URI, select platform as (Web), then enter Redirect URL as (https://{userpool_domain_name}/oauth2/idpresponse). Additional URLs for different types can be provided using the link "Add URI".
 * Go to manifest file (sidebar menu, last item), enter the App ID under _identifierUris_ in the format _"urn:amazon:cognito:sp:POOLID"_.
-* (OIDC) Go to App Registration > Your App > Certificates and secrets -> Create a new client secret and copy (Value, not secret ID). Get the Application/Client ID from the Overview link.
+* (OIDC) For redirect URI, select platform as (Web), then enter Redirect URL as (https://{userpool_domain_name}/oauth2/idpresponse). Additional URLs for different types can be provided using the link "Add URI".
+* (OIDC) Go to App Registration > Your App > Certificates and secrets -> Create a new client secret and copy (_Value_, not secret ID). Get the Application/Client ID from the Overview link.
 
 .(Cognito/SAML)
 * Under userpool, federated identities (Sign-In experience in the new UI), click on SAML.
@@ -70,11 +70,13 @@ http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress -> Email
 ** https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-oidc-idp.html
 * Under attribute mapping, map the SAML attributes to userpool attributes (eg, https://www.terminalbytes.com/azure-ad-integration-as-an-idp-with-aws-cognito/).
 ====
-name > Name
-preferred_username > Preferred User Name
-unique_name > Given Name
-email > Email
-sub > Username
+(OIDC)
+Azure/OIDC > Cognito
+name > Name??
+preferred_username > preferred_username
+unique_name > Given Name?
+email > email
+sub > username
 ====
 * Go to App Client Settings (App Integration->List->Client in new UI), enable the new Identity.
 * Modify the Callback URLs and Sign Out URLs fields to be your app's login and logout URLs.
@@ -89,7 +91,7 @@ sub > Username
 * Under claims, add groupID claim (groups assigned to the user). This can be used for Role based authorization. This page also shows all the schemas for SAML claims, copy them down.
 * Under SAML Signing Certificate, either download the Metadata doc or copy the URL.
 
-.Congito
+.Cognito
 * Create new SAML identity provider. Under attribute mappings, use a custom attribute (must already exist?) to map the groupID from SAML. Eg, uses AWS CLI.
 * In the App Client, enable the Provider.
 * Test using Hosted UI.

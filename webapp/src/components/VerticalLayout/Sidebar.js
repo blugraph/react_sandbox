@@ -15,7 +15,7 @@ export default function Sidebar(props) {
             <img src={logo} alt="" height="22" />
           </span>
           <span className="logo-lg">
-            <img src={logoBg} alt="" height="55" />
+            <img src={logoBg} alt="" style={{width: "100%",height: "55%"}}/>
           </span>
         </Link>
       </div>

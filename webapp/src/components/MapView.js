@@ -5,7 +5,6 @@ import greyIcon from '../assets/images/grey.png';
 import redIcon from '../assets/images/red.png';
 import blackIcon from '../assets/images/black.png';
 import orangeIcon from '../assets/images/orange.png'
-import { dateRange_sg } from '../Util';
 import { getStationsStatus } from '../ApiServices';
 function Map(props) {
     const [selected, setSelected] = useState(null)
@@ -59,6 +58,17 @@ function Map(props) {
     //     history.push(`/station/${data.sid}`)
     // }
 
+    function dateRange_sg(date_now) {
+        let sg_hr = date_now.toLocaleString('en-US', { hour: '2-digit', hour12: false, timeZone: 'Asia/Singapore' });
+        let min = date_now.toLocaleString('en-US', { minute: '2-digit', hour12: false, timeZone: 'Asia/Singapore' });
+        let sec = date_now.toLocaleString('en-US', { second: '2-digit', hour12: false, timeZone: 'Asia/Singapore' });
+        let ye = date_now.toLocaleString('en-US', { year: 'numeric', timeZone: 'Asia/Singapore' });
+        let mo = date_now.toLocaleString('en-US', { month: '2-digit', timeZone: 'Asia/Singapore' });
+        let da = date_now.toLocaleString('en-US', { day: '2-digit', timeZone: 'Asia/Singapore' });
+        // let dt_sg = ye + '-' + mo + '-' + da + '   ' + sg_hr + ':' + min + ':' + sec;
+        let dt_sg = ye + "-" + mo + "-" + da + " " + String(sg_hr).padStart(2, '0') + ":" + String(min).padStart(2, '0') + ":" + String(sec).padStart(2, '0');
+        return dt_sg
+    }
 
     return (
         <GoogleMap

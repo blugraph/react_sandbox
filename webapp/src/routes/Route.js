@@ -3,7 +3,8 @@
 import { React, createContext, useContext, useState } from "react";
 import { createBrowserHistory } from "history";
 import Dashboard from "../components/Dashboard";
-import { BrowserRouter, Routes, Route, Link,Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, } from "react-router-dom";
+import { Navigate } from "react-router"
 import TableList from "../components/TableList";
 import VerticalLayout from "../components/VerticalLayout/VerticalLayout";
 import { Container } from "react-bootstrap";
@@ -26,51 +27,51 @@ export default function Routers(props) {
   };
   const isloggedIn = localStorage.getItem("isloggedIn");
   return (<>
-      {isloggedIn ? 
-        <BrowserRouter>
-          <ToggleContext.Provider
-            value={{
-              toggleValue: toggleValue,
-              setToggleVal: setToggleVal,
-              setDateVal: setDateVal,
-            }}
-            toggleValue={toggleValue}
-            setToggleVal={setToggleVal}
-          >
-            <VerticalLayout />
-            <div className="main-content">
-              <div className="page-content">
-                <Container fluid>
-                  <Routes>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/tables" element={<TableList />} />
-                    <Route path="/projects" element={<Projects />} />
-                    <Route path="/maps" element={<MapsContainer />} />
-                    <Route path="/settings" element={<Settings />} />
-                  </Routes>
-                </Container>
-              </div>
+    {isloggedIn ?
+      <BrowserRouter>
+        <ToggleContext.Provider
+          value={{
+            toggleValue: toggleValue,
+            setToggleVal: setToggleVal,
+            setDateVal: setDateVal,
+          }}
+          toggleValue={toggleValue}
+          setToggleVal={setToggleVal}
+        >
+          <VerticalLayout />
+          <div className="main-content">
+            <div className="page-content">
+              <Container fluid>
+                <Routes>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/tables" element={<TableList />} />
+                  <Route path="/projects" element={<Projects />} />
+                  <Route path="/maps" element={<MapsContainer />} />
+                  <Route path="/settings" element={<Settings />} />
+                </Routes>
+              </Container>
             </div>
-          </ToggleContext.Provider>
-        </BrowserRouter>
-      : 
+          </div>
+        </ToggleContext.Provider>
+      </BrowserRouter>
+      :
       <ToggleContext.Provider
-      value={{
-        toggleValue: toggleValue,
-        setToggleVal: setToggleVal,
-        setDateVal: setDateVal,
-      }}
-      toggleValue={toggleValue}
-      setToggleVal={setToggleVal}
-    >
+        value={{
+          toggleValue: toggleValue,
+          setToggleVal: setToggleVal,
+          setDateVal: setDateVal,
+        }}
+        toggleValue={toggleValue}
+        setToggleVal={setToggleVal}
+      >
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />}></Route>
             <Route path="*" element={<Navigate replace to={'/login'} />} />
           </Routes>
         </BrowserRouter>
-        </ToggleContext.Provider>
-      }
-    </>
+      </ToggleContext.Provider>
+    }
+  </>
   );
 }

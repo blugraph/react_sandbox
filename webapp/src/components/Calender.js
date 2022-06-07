@@ -61,10 +61,7 @@ export default function Calender(props) {
   const absoulteFilter = (data_date) => {
     console.log(data_date);
     let abValue = getStartDate_TZ_SG(data_date);
-    console.log("abValue", abValue);
-    console.log("abValue  ", abValue.valueOf());
   };
-  console.log("open", open);
   return (<>
       <Breadcrumbs title="Settings" breadcrumbItem="Settings" />
       <div class="row">

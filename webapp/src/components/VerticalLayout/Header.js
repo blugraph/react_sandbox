@@ -7,17 +7,6 @@ import ProfileMenu from "../ProfileMenu";
 export default function Header(props) {
   const [search, setsearch] = useState(false);
 
-  const tToggle =()=> {
-    var body = document.body;
-    setsearch(false)
-    if (window.screen.width <= 998) {
-      body.classList.toggle("sidebar-enable");
-    } else {
-      body.classList.toggle("vertical-collpsed");
-      body.classList.toggle("sidebar-enable");
-    }
-  }
-
   return (
     <header id="page-topbar">
       <div className="navbar-header">
@@ -27,7 +16,7 @@ export default function Header(props) {
               <span className="logo-sm"><img src={logo} alt="" height="22" /></span>
             </Link>
           </div>
-          <button type="button" onClick={() => { tToggle(); }} className="btn btn-sm px-3 font-size-16 header-item " id="vertical-menu-btn"><i className="fa fa-fw fa-bars" /></button>
+          <button type="button" onClick={() => { props.tToggle(); }} className="btn btn-sm px-3 font-size-16 header-item " id="vertical-menu-btn"><i className="fa fa-fw fa-bars" /></button>
           <form className="app-search d-none d-lg-block">
             <div className="position-relative">
               <input type="text" className="form-control" placeholder="Search"/>
@@ -36,7 +25,7 @@ export default function Header(props) {
           </form>
         </div>
         <div className="d-flex">
-          <HeaderWithIcons {...props}/>
+          {/* <HeaderWithIcons {...props}/> */}
         </div>
         <div className="d-flex">
           <div className="dropdown d-inline-block d-lg-none ms-2">

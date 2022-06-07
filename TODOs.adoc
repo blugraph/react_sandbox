@@ -45,10 +45,13 @@ ____
 
 
 == React Tasks
+* c11wl web app
 * c7wl, c8wl, migration
+* Geo tracker, use Amplify login
 * c3fl?
 * emmp
 * India websites
+* Knex migration
 * bgvisit revamp
 * Lightning website
 * Test framework

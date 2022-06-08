@@ -1,7 +1,6 @@
 # Custom
 node_modules/
 config.*
-.venv
 # React build
 build/
 
@@ -78,6 +77,7 @@ typings/
 # dotenv environment variables file
 .env.test
 .env.local
+.env.dev
 
 
 # parcel-bundler cache (https://parceljs.org/)

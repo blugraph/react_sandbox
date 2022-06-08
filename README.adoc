@@ -1,0 +1,98 @@
+= react_sandbox
+Author Name <author@tty.org>
+v1.0, 2020-01-01
+:imagesdir: ./images
+:iconsdir: ./icons
+:stylesdir: ./styles
+:scriptsdir: ./js
+:hardbreaks:
+:toc:
+:toc-placement!:
+:sectnums:
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+:icons: font
+
+toc::[]
+
+Playground for React based app
+
+== Auzre AD (Office365) with Cognito
+.Azure options
+. App Registration / SAML
+. App Registration / OIDC
+. Enterprise App/SSO/SAML
+. AWS Blog, eg.
+
+=== App Registration / SAML / OIDC
+.(Cognito)
+* Create a cognito pool. Provide a domain name for response.
+* Note down the userpoolid.
+
+.(Azure AD)
+* (https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RegisteredApps)
+* (SAML) From Endpoints copy _Federation metadata document_. This will be used in SAML config of Cognito.
+* New registration
+** Give a name
+** For supported account types, select the default (Single tenant)
+** (SAML) For redirect URI, select platform as (Web or SPA), then enter the Cognito response URL as Redirect URL (Reply URL). (https://{userpool_domain_name}/saml2/idpresponse)
+* Go to manifest file (sidebar menu, last item), enter the App ID under _identifierUris_ in the format _"urn:amazon:cognito:sp:POOLID"_.
+* (OIDC) For redirect URI, select platform as (Web), then enter Redirect URL as (https://{userpool_domain_name}/oauth2/idpresponse). Additional URLs for different types can be provided using the link "Add URI".
+* (OIDC) Go to App Registration > Your App > Certificates and secrets -> Create a new client secret and copy (_Value_, not secret ID). Get the Application/Client ID from the Overview link.
+
+.(Cognito/SAML)
+* Under userpool, federated identities (Sign-In experience in the new UI), click on SAML.
+* Select manual option and enter the manifest URL. Provide a friendly name for this identity (Will appear on Hosted UI for Clients).
+* Under attribute mapping, map the SAML attributes to userpool attributes (eg, https://www.terminalbytes.com/azure-ad-integration-as-an-idp-with-aws-cognito/).
+====
+http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name -> Name
+http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname -> Given Name
+http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname -> Family Name
+http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress -> Email
+====
+* Go to App Client Settings (App Integration->List->Client in new UI), enable the new Identity.
+* Modify the Callback URLs and Sign Out URLs fields to be your app's login and logout URLs.
+* To test either use Hosted UI or create a button for the URL, "https://FRIENDLYDOMAINPREFIX.auth.REGION.amazoncognito.com/oauth2/authorize?identity_provider=FRIENDLYPROVIDERNAME&redirect_uri=http://localhost:3000&response_type=TOKEN&client_id=CLIENTID&scope=aws.cognito.signin.user.admin email openid phone profile".
+** https://<Cognito domain name>.auth.ap-southeast-1.amazoncognito.com/login?response_type=token&client_id=<Cognito App Client ID>&redirect_uri=<Cognito Callback URL>
+
+.(Cognito/OIDC)
+* Under userpool, federated identities (Sign-In experience in the new UI), click on OIDC.
+* Enter the App ID and secret. Provide a friendly name for this identity.
+* Enter any additional scopes (openid profile email).
+* For attributes, select auto option and provide the Issuer URL as, https://login.microsoftonline.com/{tenant_id}/v2.0. Get the tenant ID from AzureAD, under properties link. Other options are _common, organizations, consumers_. For old UI "Run Discovery", for new UI, just submit.
+** https://docs.microsoft.com/en-us/azure/app-service/configure-authentication-provider-aad
+** https://docs.microsoft.com/en-us/powerapps/maker/portals/configure/configure-openid-settings
+** https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-oidc-idp.html
+* Under attribute mapping, map the SAML attributes to userpool attributes (eg, https://www.terminalbytes.com/azure-ad-integration-as-an-idp-with-aws-cognito/).
+====
+(OIDC)
+Azure/OIDC > Cognito
+name > Name??
+preferred_username > preferred_username
+unique_name > Given Name?
+email > email
+sub > username
+====
+* Go to App Client Settings (App Integration->List->Client in new UI), enable the new Identity.
+* Modify the Callback URLs and Sign Out URLs fields to be your app's login and logout URLs.
+* To test use the Hosted UI.
+
+=== Enterprise App
+.AzureAD
+* (https://aws.amazon.com/blogs/security/how-to-set-up-amazon-cognito-for-federated-authentication-using-azure-ad/)
+* New Enterprise Applications -> New App -> Create your own -> “Non-gallery application” type application.
+* Setup Single Sign On
+* Under SSO, edit each of the sections. Under basic, enter the App ID as _"urn:amazon:cognito:sp:POOLID"_ and Reply URL as https://{domain}/saml2/idpresponse.
+* Under claims, add groupID claim (groups assigned to the user). This can be used for Role based authorization. This page also shows all the schemas for SAML claims, copy them down.
+* Under SAML Signing Certificate, either download the Metadata doc or copy the URL.
+
+.Cognito
+* Create new SAML identity provider. Under attribute mappings, use a custom attribute (must already exist?) to map the groupID from SAML. Eg, uses AWS CLI.
+* In the App Client, enable the Provider.
+* Test using Hosted UI.
+** First time there was error, _The signed in user 'user@email' is not assigned to a role for the application_. (https://stackoverflow.com/questions/37062964/azure-ad-exception-aadsts50105-the-signed-in-user-is-not-assigned-to-a-role). To fix the error, under AzureAD, under the Apps Properties, change the property _Assignment required?_ to _No_ (default is yes).

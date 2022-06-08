@@ -1,0 +1,83 @@
+= TODOs
+Author Name <author@tty.org>
+v1.0, 2020-01-01
+:imagesdir: ./images
+:iconsdir: ./icons
+:stylesdir: ./styles
+:scriptsdir: ./js
+:hardbreaks:
+:toc:
+:toc-placement!:
+:sectnums:
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+:icons: font
+
+toc::[]
+
+This is a preamble.
+
+== Uncat
+
+NOTE: Use Asciidoc to format the document.
+
+// enable callout bubbles by adding `:icons: font` to the document header
+[,ruby]
+----
+puts 'Hello, World!' # <1>
+----
+<1> Prints `Hello, World!` to the console.
+
+
+====
+Here is an example
+====
+
+
+____
+Here is a quote
+____
+
+
+== React Tasks
+* c11wl web app
+* c7wl, c8wl, migration
+* Geo tracker, use Amplify login
+* c3fl?
+* emmp
+* India websites
+* Knex migration
+* bgvisit revamp
+* Lightning website
+* Test framework
+* Maintenance app
+* Admin tool
+* BluSilver
+* MoE App
+* Car wash
+* EduReact
+* BIMA
+
+
+
+.TODOs
+//* In important browser conole log messages add timestamp in the local time format YYYY-DD-MM hh:mm:ss, 
+* Review MQTT connect options, 
+* Try Amplify Hosted UI. Office365 integration.
+* Update datetime range calendar.
+* Knex migration.
+* AWS IoT device SDK V2.
+* Test framework in CICD.
+* SID from roles for cpn_signage. (Adjust token exp time in Prod)
+* BgVisit restructuring.
+* Pubc10wl
+** Casl-auth
+** Cognito
+** React-bootstrap.
+* BluSilver
+* Geotracker-> GeoAuth.

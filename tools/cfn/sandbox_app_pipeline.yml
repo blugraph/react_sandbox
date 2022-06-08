@@ -1,0 +1,437 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Sandbox CI-CD, prepare Codepipeline and Codebuild for Test and Prod.
+
+Metadata:
+  AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "General Configuration"
+        Parameters: 
+          - NetworkStackName
+          - CodePipelineName
+          # - CodepipelineBucket
+          # - GitHubConnection
+          - GitHubUser
+          - GitHubRepo
+          - GitHubBranchMain
+          - GitHubBranchTest
+          - CodeBuildName
+          - CodeBuildEnvironmentType
+          - CodeBuildComputeType
+          - CodeBuildImage
+          - BuildSpecFile
+          - EcsServiceName
+
+Parameters: 
+  NetworkStackName:
+    AllowedPattern: '^[a-zA-Z][-a-zA-Z0-9]*$'
+    ConstraintDescription: must begin with a letter and contain alphanumeric/hyphen.
+    Default: bgsg-vpc-rcs
+    Description: Name of an active CloudFormation stack that contains the networking resources, such as the subnet and security group, that will be used in this stack.
+    MaxLength: '255'
+    MinLength: '1'
+    Type: String
+  CodePipelineName:
+    Type: String
+    Default: "CpnSignApp"
+  # CodepipelineBucket:
+  #   Type: String
+  #   Default: "codepipeline-blugraph-services"
+  #   Description: S3 bucket for sharing artefacts
+  # GitHubConnection:
+  #   Type: String
+  #   Description: GitHub to AWS Codesrar Connection
+  #   Default: bgOrgGithub
+  GitHubUser:
+    Type: String
+    Description: GitHub account Name
+    Default: blugraph
+  GitHubRepo:
+    Type: String
+    Description: GitHub Repo Name
+    Default: "cpn_signage"
+  GitHubBranchMain:
+    Type: String
+    Description: GitHub Main Branch name
+    Default: "main"  
+  GitHubBranchTest:
+    Type: String
+    Description: GitHub Test Branch name
+    Default: "test"  
+  CodeBuildName:
+    Type: String
+    Default: "CpnSignApp"
+  CodeBuildEnvironmentType:
+    Type: String
+    Default: "LINUX_CONTAINER"
+    Description: Build container type
+  CodeBuildComputeType:
+    Type: String
+    Default: "BUILD_GENERAL1_SMALL"
+    Description: Build compute type
+  CodeBuildImage:
+    Type: String
+    Default: "aws/codebuild/standard:5.0"
+    Description: Build Image
+  BuildSpecFile:
+    Type: String
+    Default: "webapp/buildspec_webapp.yml"
+    Description: Build Image
+  EcsServiceName:
+    Type: String
+    Default: cpn-sign-app
+
+Resources:
+  CodePipelineProd:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      # Name: !Sub ${AWS::StackName}
+      Name: !Sub ${CodePipelineName}-Prod
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - InputArtifacts: []
+              Name: Source
+              ActionTypeId:
+                Version: "1"
+                Owner: AWS
+                Category: Source
+                Provider: CodeStarSourceConnection
+              Namespace: SourceVariables
+              OutputArtifacts:
+                - Name: SourceArtifact
+              RunOrder: 1
+              Configuration:
+                #ConnectionArn: !Ref GitHubCodeStarConnection
+                ConnectionArn: !ImportValue 
+                  'Fn::Sub': '${NetworkStackName}:GitHubCodeStarConnection'
+                FullRepositoryId: !Sub ${GitHubUser}/${GitHubRepo}
+                BranchName: !Ref GitHubBranchMain
+                OutputArtifactFormat: "CODE_ZIP"
+                DetectChanges: false
+        - Name: Prod-Build
+          Actions:
+            - Name: Build-to-prod-docker-img
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              InputArtifacts:
+                - Name: SourceArtifact
+              Configuration:
+                ProjectName: !Ref CodeBuildMutliStage
+                BatchEnabled: false
+                EnvironmentVariables: '[{"name":"GIT_BRANCH","value":"#{SourceVariables.BranchName}","type":"PLAINTEXT"},{"name":"COMMIT_ID","value":"#{SourceVariables.CommitId}","type":"PLAINTEXT"}]'
+              Namespace: BuildVariables
+              OutputArtifacts:
+                - Name: BuildArtifact
+              RunOrder: 1
+        - Name: Prod-Approval
+          Actions:
+            - Name: Approve-for-Prod
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Version: 1
+                Provider: Manual
+              Configuration:
+                NotificationArn: !Ref SNSTopic
+                ExternalEntityLink: !Sub "https://${EcsServiceName}.bgsg.blugraph.services"
+                CustomData: "Prod Deployment Pending Approval"
+              RunOrder: 1
+        - Name: Prod-Deploy
+          Actions:
+            - Name: Deploy-to-Prod
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: ECS
+              InputArtifacts:
+                - Name: BuildArtifact
+              Configuration:
+                ClusterName: bgsg-cluster
+                ServiceName: !Sub ${EcsServiceName}
+                FileName: imagedefinitions.json
+                DeploymentTimeout: 15
+              Namespace: DeployVariables
+              RunOrder: 1
+      ArtifactStore:
+        Type: S3
+        # Location: !Ref PipelineBucket
+        Location: !ImportValue 
+          'Fn::Sub': '${NetworkStackName}:BgSgPipelineBucket'
+
+  CodePipelineTest:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      # Name: !Sub ${AWS::StackName}
+      Name: !Sub ${CodePipelineName}-Test
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - InputArtifacts: []
+              Name: Source
+              ActionTypeId:
+                Version: "1"
+                Owner: AWS
+                Category: Source
+                Provider: CodeStarSourceConnection
+              Namespace: SourceVariables
+              OutputArtifacts:
+                - Name: SourceArtifact
+              RunOrder: 1
+              Configuration:
+                # ConnectionArn: !Ref GitHubCodeStarConnection
+                ConnectionArn: !ImportValue 
+                  'Fn::Sub': '${NetworkStackName}:GitHubCodeStarConnection'
+                FullRepositoryId: !Sub ${GitHubUser}/${GitHubRepo}
+                BranchName: !Ref GitHubBranchTest
+                OutputArtifactFormat: "CODE_ZIP"
+                DetectChanges: false
+        - Name: Test-Build
+          Actions:
+            - Name: Build-to-test-docker-img
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              InputArtifacts:
+                - Name: SourceArtifact
+              Configuration:
+                ProjectName: !Ref CodeBuildMutliStage
+                BatchEnabled: false
+                EnvironmentVariables: '[{"name":"GIT_BRANCH","value":"#{SourceVariables.BranchName}","type":"PLAINTEXT"},{"name":"COMMIT_ID","value":"#{SourceVariables.CommitId}","type":"PLAINTEXT"}]'
+              OutputArtifacts:
+                - Name: BuildArtifact
+              Namespace: BuildVariables
+              RunOrder: 1
+        - Name: Test-Deploy
+          Actions:
+            - Name: Deploy-to-Test
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: ECS
+              InputArtifacts:
+                - Name: BuildArtifact
+              Configuration:
+                ClusterName: bgsg-cluster
+                ServiceName: !Sub ${EcsServiceName}-test
+                FileName: imagedefinitions.json
+                DeploymentTimeout: 15
+              Namespace: DeployVariables
+              RunOrder: 1
+      ArtifactStore:
+        Type: S3
+        Location: !ImportValue 
+          'Fn::Sub': '${NetworkStackName}:BgSgPipelineBucket'
+
+  # GitHubCodeStarConnection:
+  #   Type: AWS::CodeStarConnections::Connection
+  #   Properties:
+  #     ConnectionName: !Ref GitHubConnection
+  #     ProviderType: GitHub
+
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      # RoleName: !Sub ${AWS::StackName}-codepipeline-role
+      RoleName: !Sub ${CodePipelineName}-codepipeline-role
+      Policies:
+        # - PolicyName: !Sub ${AWS::StackName}-codepipeline-policy
+        - PolicyName: !Sub ${CodePipelineName}-codepipeline-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource: "*"
+                Condition: 
+                  StringEqualsIfExists:
+                    iam:PassedToService:
+                      - cloudformation.amazonaws.com
+                      - ecs-tasks.amazonaws.com
+              - Effect: Allow
+                Action:
+                  - codedeploy:CreateDeployment
+                  - codedeploy:GetApplication
+                  - codedeploy:GetApplicationRevision
+                  - codedeploy:GetDeployment
+                  - codedeploy:GetDeploymentConfig
+                  - codedeploy:RegisterApplicationRevision
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - ecr:DescribeImages
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - ecs:*
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - codebuild:BatchGetBuilds
+                  - codebuild:StartBuild
+                Resource:
+                  - !GetAtt CodeBuildMutliStage.Arn
+              - Effect: Allow
+                Action:
+                  - s3:Put*
+                  - s3:Get*
+                Resource:
+                  # - !GetAtt PipelineBucket.Arn
+                  # - !Join ['', [!GetAtt PipelineBucket.Arn, "/*"]]
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource:
+                  - !Ref SNSTopic
+              - Effect: Allow
+                Action:
+                  - codestar-connections:UseConnection
+                Resource:
+                  - "*"
+
+
+  CodeBuildMutliStage:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      # Name: !Sub ${AWS::StackName}-CodeBuild
+      Name: !Ref CodeBuildName
+      Description: Build Module to Container Image and push to ECR 
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+        # Name: "", only used for Type=S3
+      Environment:
+        Type: !Ref CodeBuildEnvironmentType
+        ComputeType: !Ref CodeBuildComputeType
+        Image: !Ref CodeBuildImage
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: AWS_DEFAULT_REGION
+            Value: !Ref AWS::Region
+          - Name: AWS_ACCOUNT_ID
+            Value: !Ref AWS::AccountId
+          - Name: REACT_APP_USERPOOLWEBCLIENTID
+            Type: PARAMETER_STORE
+            Value: !Sub /CodeBuild/${CodeBuildName}/Cognito/WebClientId
+          - Name: REACT_APP_USERPOOLID
+            Type: PARAMETER_STORE
+            Value: !Sub /CodeBuild/${CodeBuildName}/Cognito/UserPoolId
+          - Name: REACT_APP_IDENTITYPOOLID
+            Type: PARAMETER_STORE
+            Value: !Sub /CodeBuild/${CodeBuildName}/Cognito/IdentityPoolId
+      Source:
+        Type: CODEPIPELINE
+        # BuildSpec: !Sub |
+        #   version: 0.1
+        #   .... (inline)
+        BuildSpec: !Sub ${BuildSpecFile} 
+      TimeoutInMinutes: 20
+      LogsConfig:
+        CloudWatchLogs: 
+          GroupName: !Sub /aws/codebuild/${CodeBuildName}
+          Status: ENABLED
+          #StreamName: String
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      #RoleName: !Sub ${AWS::StackName}-codebuild-role
+      RoleName: !Sub ${CodeBuildName}-codebuild-role
+      Policies:
+        #- PolicyName: !Sub ${AWS::StackName}-codebuild-policy
+        - PolicyName: !Sub ${CodeBuildName}-codebuild-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildName}"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildName}:*"
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/CodeBuild/${CodeBuildName}/*
+              - Effect: Allow
+                Action:
+                  - s3:Put*
+                  - s3:Get*
+                Resource: 
+                  # - !GetAtt PipelineBucket.Arn
+                  # - !Join ['', [!GetAtt PipelineBucket.Arn, "/*"]]
+                  - "*"
+              - Effect: "Allow"
+                Action: 
+                  - "ecr:GetAuthorizationToken"
+                Resource: 
+                  - "*"
+              - Effect: "Allow"
+                Action: 
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:UploadLayerPart
+                  - ecr:PutImage
+                  - ecr:BatchGetImage
+                  - ecr:CompleteLayerUpload
+                  - ecr:InitiateLayerUpload
+                  - ecr:BatchCheckLayerAvailability
+                Resource:
+                  - "arn:aws:ecr:ap-southeast-1:433339126986:repository/bgsg/*"
+
+
+  # PipelineBucket: 
+  #   Type: 'AWS::S3::Bucket'
+  #   Properties:
+  #     BucketName: !Sub ${CodepipelineBucket}
+
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      DisplayName: !Sub ${CodePipelineName}
+      FifoTopic: false
+      # Subscription: 
+      #   - Subscription
+      TopicName: !Sub ${CodePipelineName}
+
+
+Outputs:
+  SNSTopicArn:
+    Description: ARN of SNS Topic
+    Value: !Ref SNSTopic

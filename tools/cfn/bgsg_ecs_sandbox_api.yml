@@ -1,0 +1,336 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Sandbox API, prepare ECS task/service and register with ELB.
+
+# Eg, https://github.com/1Strategy/fargate-cloudformation-example/blob/master/fargate.yaml
+
+Metadata:
+  AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "General Configuration"
+        Parameters: 
+          - ServiceName
+          - NetworkStackName
+          - ContainerImage
+          - ContainerPort
+          #- LoadBalancerPort
+          - SvcSubdomain
+          - ELBListenerPrio
+          - MinContainers
+          - MaxContainers
+          - AutoScalingTargetCPU
+          - AutoScalingTargetMem
+
+Parameters:
+  ServiceName:
+    Type: String
+    Default: sandbox-api
+  ClusterName:
+    Type: String
+    Default: bgsg-cluster
+  NetworkStackName:
+    AllowedPattern: '^[a-zA-Z][-a-zA-Z0-9]*$'
+    ConstraintDescription: must begin with a letter and contain alphanumeric/hyphen.
+    Default: bgsg-vpc-rcs
+    Description: Name of an active CloudFormation stack that contains the networking resources, such as the subnet and security group, that will be used in this stack.
+    MaxLength: '255'
+    MinLength: '1'
+    Type: String
+  ContainerImage:
+    Type: String
+    Default: "433339126986.dkr.ecr.ap-southeast-1.amazonaws.com/bgsg/sand-api:latest" 
+  ContainerPort:
+    Type: Number
+    Default: 9000
+  SvcSubdomain:
+    Type: String
+    Default: 'sandbox-api'
+  ELBListenerPrio:
+    Type: Number
+    Default: 9
+  # for autoscaling
+  MinContainers:
+    Type: Number
+    Default: 1
+  MaxContainers:
+    Type: Number
+    Default: 10
+  # target CPU utilization (%)
+  AutoScalingTargetCPU:
+    Type: Number
+    Default: 70    
+  AutoScalingTargetMem:
+    Type: Number
+    Default: 90
+
+
+Resources:
+  # This is an IAM role which authorizes ECS to manage resources on your
+  # account on your behalf, such as updating your load balancer with the
+  # details of where your containers are, managing secrets, getting docker 
+  # images from ECR, etc.
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join ['', [!Ref ServiceName, TaskExecutionRole]]
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+      Policies:
+        - PolicyName: !Join ['', [!Ref ServiceName, SecretsPolicy]]
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+            - Effect: Allow
+              Action:
+                - 'ssm:GetParameters'
+                - 'secretsmanager:GetSecretValue'
+                - 'kms:Decrypt'
+              Resource: 
+                - 'arn:aws:ssm:ap-southeast-1:433339126986:parameter/*'
+                - 'arn:aws:secretsmanager:ap-southeast-1:433339126986:secret:*'
+                - 'arn:aws:kms:ap-southeast-1:433339126986:key/*'
+            - Effect: Allow
+              Action:
+                - 'secretsmanager:GetSecretValue'
+                - 'kms:Decrypt'
+              Resource: 
+                - 'arn:aws:secretsmanager:ap-southeast-1:433339126986:secret:*'
+                - 'arn:aws:kms:ap-southeast-1:433339126986:key/*'
+
+
+  # This is a role which is used by the ECS tasks to access other services, 
+  # equivalent to IAM Role attached to EC2.
+  ECSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join ['', [!Ref ServiceName, ECSTaskRole]]
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ecs-tasks.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      # ManagedPolicyArns:
+      #   -
+      # Policies:
+      #   -
+      Policies:
+        - PolicyName: !Join ['', [!Ref ServiceName, ECSTaskPolicy]]
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+            - Effect: Allow
+              Action:
+                # Allows the ECS tasks to interact with DDB table
+                - 'dynamodb:PutItem'
+                - 'dynamodb:DeleteItem'
+                - 'dynamodb:DescribeTable'
+                - 'dynamodb:Query'
+                - 'dynamodb:UpdateItem'
+                - 'dynamodb:GetItem'
+              Resource: 'arn:aws:dynamodb:ap-southeast-1:433339126986:table/bgvisit-ddb'
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ['', [/ecs/, !Ref ServiceName, Task]]
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    # Makes sure the log group is created before it is used.
+    #DependsOn: LogGroup # Already enforced by the Ref in ContainerDefinitions.
+    Properties:
+      Family: !Join ['', [!Ref ServiceName, TaskDefinition]]
+      # awsvpc is required for Fargate
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: 256
+      Memory: 0.5GB
+      # A role needed by ECS.
+      # "The ARN of the task execution role that containers in this task can assume. All containers in this task are granted the permissions that are specified in this role."
+      # "There is an optional task execution IAM role that you can specify with Fargate to allow your Fargate tasks to make API calls to Amazon ECR."
+      # ExecutionRoleArn: !Ref TaskExecutionRole
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      # "The Amazon Resource Name (ARN) of an AWS Identity and Access Management (IAM) role that grants containers in the task permission to call AWS APIs on your behalf."
+      TaskRoleArn: !Ref ECSTaskRole
+      ContainerDefinitions:
+        - Name: !Ref ServiceName
+          Image: !Ref ContainerImage
+          PortMappings:
+            - ContainerPort:  !Ref ContainerPort
+              HostPort:  !Ref ContainerPort
+              Protocol: tcp
+          Environment: 
+            - Name: TZ
+              Value: "Asia/Singapore"
+            - Name: DB_DATABASENAME
+              Value: cpn_signage
+            - Name: NODE_ENV
+              Value: production
+            - Name: UseDDB
+              Value: true
+            - Name: SOCKET_PATH
+              Value: ""
+          Secrets:
+            - Name: DB_HOST
+              ValueFrom: /CodeBuild/SandBoxApi/RDS/DBHost
+            - Name: DB_USER
+              ValueFrom: /CodeBuild/SandBoxApi/RDS/DBUser
+            - Name: DB_PASSWORD
+              ValueFrom: /CodeBuild/SandBoxApi/RDS/DBPass
+          # Send logs to CloudWatch Logs
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup
+              awslogs-stream-prefix: ecs
+          Essential: true
+
+  CpnSignApiService:
+    Type: AWS::ECS::Service
+    # This dependency is needed so that the load balancer is setup correctly in time
+    # TODO
+    # DependsOn:
+    #   - ListenerBgSgHTTPS
+    Properties: 
+      ServiceName: !Ref ServiceName
+      Cluster: !Ref ClusterName
+      TaskDefinition: !Ref TaskDefinition
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 0
+        MaximumPercent: 200
+      DesiredCount: 1
+      # This may need to be adjusted if the container takes a while to start up
+      HealthCheckGracePeriodSeconds: 30
+      LaunchType: FARGATE
+      NetworkConfiguration: 
+        AwsvpcConfiguration:
+          # change to DISABLED if you're using private subnets that have access to a NAT gateway
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue
+              'Fn::Sub': '${NetworkStackName}:PrivateSubnetOne'
+            - !ImportValue
+              'Fn::Sub': '${NetworkStackName}:PrivateSubnetTwo'
+          SecurityGroups:
+            - !ImportValue
+              'Fn::Sub': '${NetworkStackName}:FargateContainerSecurityGroup'             
+      LoadBalancers:
+        - ContainerName: !Ref ServiceName
+          ContainerPort: !Ref ContainerPort
+          TargetGroupArn: !Ref SvcTargetGroup
+
+
+  SvcTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: HTTP
+      # will look for a 200 status code by default unless specified otherwise
+      #HealthCheckPath: !Ref HealthCheckPath
+      HealthCheckTimeoutSeconds: 5
+      UnhealthyThresholdCount: 3
+      HealthyThresholdCount: 3
+      Name: !Join ['', [!Ref ServiceName, SvcTargetGroup]]
+      Port: !Ref ContainerPort
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60 # default is 300
+      TargetType: ip # default: instance, other: lambda
+      VpcId: !ImportValue 
+        'Fn::Sub': '${NetworkStackName}:VPCId'
+
+
+  SvcListenerRule:
+    Type: 'AWS::ElasticLoadBalancingV2::ListenerRule'
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref SvcTargetGroup
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig: 
+            Values:
+              - Fn::Join:
+                  - ''
+                  - - !Ref SvcSubdomain
+                    - '.'
+                    - Fn::ImportValue: !Sub '${NetworkStackName}:BgSgHostedZone'
+      ListenerArn: !ImportValue 
+        'Fn::Sub': '${NetworkStackName}:ListenerBgSgHTTPS'
+      Priority: !Ref ELBListenerPrio
+
+  ECSScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MinCapacity: !Ref MinContainers
+      MaxCapacity: !Ref MaxContainers
+      RoleARN: 
+        Fn::Sub: 'arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService'
+      ServiceNamespace: ecs
+      ScalableDimension: 'ecs:service:DesiredCount'
+      ResourceId: !Join 
+        - /
+        - - service
+          - !Ref ClusterName
+          - !GetAtt CpnSignApiService.Name
+  ServiceScalingPolicyCPU:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      # PolicyName: !Join ['', [!Ref ServiceName, AutoScalingPolicy]]
+      PolicyName: !Sub ${AWS::StackName}-target-tracking-cpu70
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref ECSScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: !Ref AutoScalingTargetCPU
+        ScaleInCooldown: 180
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+  ServiceScalingPolicyMem:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub ${AWS::StackName}-target-tracking-mem90
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref ECSScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: !Ref AutoScalingTargetMem
+        ScaleInCooldown: 180
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageMemoryUtilization
+
+# Outputs, exported with specific
+# names so that the other task related CF templates can use them.
+Outputs:
+  TaskExecutionRole:
+    Description: RMT ECS Service Role
+    Value: !GetAtt 'TaskExecutionRole.Arn'
+    Export:
+      Name: !Join [ ':', [ !Ref 'AWS::StackName', 'TaskExecutionRole' ] ]
+  ECSTaskRole:
+    Description: RMT ECS Task Role
+    Value: !GetAtt 'ECSTaskRole.Arn'
+    Export:
+      Name: !Join [ ':', [ !Ref 'AWS::StackName', 'ECSTaskRole' ] ]
+  Endpoint:
+    Description: Endpoint
+    #Value: !Join ['', ['https://', !Ref SvcSubdomain, ., Fn::ImportValue: !Sub '${NetworkStackName}:BgSgHostedZone']]
+    #Value: !Sub ["https://${SvcSubdomain}., Fn::ImportValue: !Sub '${NetworkStackName}:BgSgHostedZone"]] 
+    Value: !Sub
+      - https://${SvcSubdomain}.${BgSgHostedZone}
+      - BgSgHostedZone: !ImportValue
+          'Fn::Sub': '${NetworkStackName}:BgSgHostedZone'
+

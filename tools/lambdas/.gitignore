@@ -2,6 +2,14 @@
 node_modules/
 config.*
 .venv
+context.json
+deploy.env
+event_sources.json
+event.json
+index.js
+config.json
+bgvisitAnprApi.zip
+package-lock.json
 # React build
 build/
 

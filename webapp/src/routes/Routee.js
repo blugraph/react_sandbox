@@ -6,6 +6,7 @@ import Layout from "../components/Layout/Layout";
 import { ToggleContext } from "../components/ToggleContext";
 import Dashboard from "../components/Dashboard";
 import { Container } from "react-bootstrap";
+import Home from "../components/Home";
 
 export default function Routee(props) {
     const [date, setDate] = useState();
@@ -17,6 +18,7 @@ export default function Routee(props) {
         setDate(new Date());
     };
     const isloggedIn = localStorage.getItem("isloggedIn");
+    console.log('isloggedIn ',isloggedIn)
     return (
         <>
             {isloggedIn ?
@@ -35,7 +37,9 @@ export default function Routee(props) {
                             <div className="page-content">
                                 <Container fluid>
                                     <Routes>
+                                        <Route path="/home" element={<Home />} />
                                         <Route path="/dashboard" element={<Dashboard />} />
+                                        <Route path="/login" element={<Navigate replace to={'/home'} />} />
                                     </Routes>
                                 </Container>
                             </div>

@@ -31,7 +31,6 @@ export default function Login(props) {
         } else { setErrorMsg(undefined); login(); }
     }
     const login = () => {
-        let request = { email: email, password: password }
         localStorage.setItem('isloggedIn', true);
         user.setDateVal(); navigate('/dashboard');
     }
@@ -43,8 +42,8 @@ export default function Login(props) {
         </Navbar>
         <div className="container-fluid" >
             <Row>
-                <Col sm={8} className="d-none d-md-block"><img src={loginImg} className="img-fluid" /></Col>
-                <Col sm={4} className="shadow-lg p-5">
+                <Col xl={8} className="d-none d-md-block"><img src={loginImg} className="img-fluid" /></Col>
+                <Col xl={4} className="shadow-lg p-5">
                     <Card.Body>
                         <Card.Title><h2>Sandbox</h2></Card.Title>
                         <Form>

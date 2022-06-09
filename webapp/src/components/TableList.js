@@ -26,7 +26,7 @@ export default function TableList(props) {
         accessor: "status",
       },
       {
-        Header: "Profile Progress",
+        Header: "Profile",
         accessor: "progress",
       },
     ],
@@ -34,5 +34,5 @@ export default function TableList(props) {
   );
 
   const data = jsonData;
-  return <ReactV6Table list={data} columns={columns} />;
+  return <ReactV6Table list={data} columns={columns} className="p-5"/>;
 }

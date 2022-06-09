@@ -14,7 +14,7 @@ export default function ReactV6Table(props){
         pageText={'Page'}
         ofText={'of'}
         rowsText={'rows'}
-        className="-striped -highlight"
+        className="-striped -highlight p-3 noBorder"
       />
      )
       

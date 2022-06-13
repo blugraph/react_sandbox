@@ -107,6 +107,7 @@ Update scopes to "aws.cognito.signin.user.admin", email, profile, openid
 ** First time there was error, _The signed in user 'user@email' is not assigned to a role for the application_. (https://stackoverflow.com/questions/37062964/azure-ad-exception-aadsts50105-the-signed-in-user-is-not-assigned-to-a-role). To fix the error, under AzureAD, under the Apps Properties, change the property _Assignment required?_ to _No_ (default is yes).
 
 == Debug
+* "..Does not match..", BGLogin -> BgLogin.
 * https://localhost -> http://localhost
 * "..Invalid+ProviderName/Username+combination.." (Add the Optional Claims under Azure AD)
 * "..Token is not from a supported provider of this identity pool." -> Wrong identity pool ID setting in .env.local (parameter store). Get the identity pool id by clicking the edit of related federated identity pool.

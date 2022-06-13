@@ -38,12 +38,12 @@ Playground for React based app
 * (https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RegisteredApps)
 * (SAML) From Endpoints copy _Federation metadata document_. This will be used in SAML config of Cognito.
 * New registration
-** Give a name
-** For supported account types, select the default (Single tenant)
-** (SAML) For redirect URI, select platform as (Web or SPA), then enter the Cognito response URL as Redirect URL (Reply URL). (https://{userpool_domain_name}/saml2/idpresponse)
-* Go to manifest file (sidebar menu, last item), enter the App ID under _identifierUris_ in the format _"urn:amazon:cognito:sp:POOLID"_.
+* Give a name
+* For supported account types, select the default (Single tenant)
+* (SAML) For redirect URI, select platform as (Web or SPA), then enter the Cognito response URL as Redirect URL (Reply URL). (https://{userpool_domain_name}/saml2/idpresponse)
 * (OIDC) For redirect URI, select platform as (Web), then enter Redirect URL as (https://{userpool_domain_name}/oauth2/idpresponse). Additional URLs for different types can be provided using the link "Add URI".
 * (OIDC) Go to App Registration > Your App > Certificates and secrets -> Create a new client secret and copy (_Value_, not secret ID). Get the Application/Client ID from the Overview link.
+* Go to manifest file (sidebar menu, last item), enter the App ID under _identifierUris_ in the format _"urn:amazon:cognito:sp:POOLID"_.
 
 .(Cognito/SAML)
 * Under userpool, federated identities (Sign-In experience in the new UI), click on SAML.
@@ -62,21 +62,22 @@ http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress -> Email
 
 .(Cognito/OIDC)
 * Under userpool, federated identities (Sign-In experience in the new UI), click on OIDC.
-* Enter the App ID and secret. Provide a friendly name for this identity.
+* Enter the App ID (from Overview) and secret (Generated in step above). Provide a friendly name for this identity.
 * Enter any additional scopes (openid profile email).
-* For attributes, select auto option and provide the Issuer URL as, https://login.microsoftonline.com/{tenant_id}/v2.0. Get the tenant ID from AzureAD, under properties link. Other options are _common, organizations, consumers_. For old UI "Run Discovery", for new UI, just submit.
+* For attributes, select auto option (with GET) and provide the Issuer URL as, https://login.microsoftonline.com/{tenant_id}/v2.0. Get the tenant ID from AzureAD (BluGraph), under properties link. Other options are _common, organizations, consumers_. For old UI "Run Discovery", for new UI, just submit.
 ** https://docs.microsoft.com/en-us/azure/app-service/configure-authentication-provider-aad
 ** https://docs.microsoft.com/en-us/powerapps/maker/portals/configure/configure-openid-settings
 ** https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-oidc-idp.html
 * Under attribute mapping, map the SAML attributes to userpool attributes (eg, https://www.terminalbytes.com/azure-ad-integration-as-an-idp-with-aws-cognito/).
 ====
-(OIDC)
-Azure/OIDC > Cognito
-name > Name??
+(OIDC Mapping)
+Cognito User Pool > Azure/OIDC 
 preferred_username > preferred_username
-unique_name > Given Name?
 email > email
-sub > username
+username > sub
+given_name	given_name
+profile	profile
+
 ====
 * Go to App Client Settings (App Integration->List->Client in new UI), enable the new Identity.
 * Modify the Callback URLs and Sign Out URLs fields to be your app's login and logout URLs.

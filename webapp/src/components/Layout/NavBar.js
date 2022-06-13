@@ -50,7 +50,7 @@ export default function NavBar(props) {
                                 <NavLink style={{ textDecoration: 'none' }} to={'/home'} className='nav-link'> <i className="fa fa-house-chimney"></i>&nbsp;&nbsp;&nbsp;Home</NavLink>
                                 <NavLink style={{ textDecoration: 'none' }} to={'/dashboard'} className='nav-link'> <i className="fa fa-object-group" aria-hidden="true"></i> &nbsp;&nbsp;&nbsp;Stations</NavLink>
                                 <NavLink style={{ textDecoration: 'none' }} to={'/tables'}    className='nav-link'> &nbsp;&nbsp;&nbsp;Projects </NavLink>
-                                <NavLink style={{ textDecoration: 'none' }} to={'/dashboard'} className='nav-link'> &nbsp;&nbsp;&nbsp;Users</NavLink>
+                                <NavLink style={{ textDecoration: 'none' }} to={'/users'} className='nav-link'> &nbsp;&nbsp;&nbsp;Users List</NavLink>
                                 <NavLink style={{ textDecoration: 'none' }} to={'/dashboard'} className='nav-link'> &nbsp;&nbsp;&nbsp;Subscribers</NavLink>
                                 <Navbar.Collapse>
                                     <Nav className="NavBarCls">

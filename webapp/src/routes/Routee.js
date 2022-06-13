@@ -7,6 +7,7 @@ import { ToggleContext } from "../components/ToggleContext";
 import Dashboard from "../components/Dashboard";
 import { Container } from "react-bootstrap";
 import Home from "../components/Home";
+import UsersList from "../components/Users/UsersList";
 
 export default function Routee(props) {
     const [date, setDate] = useState();
@@ -39,6 +40,7 @@ export default function Routee(props) {
                                     <Routes>
                                         <Route path="/home" element={<Home />} />
                                         <Route path="/dashboard" element={<Dashboard />} />
+                                        <Route path="/users" element={<UsersList />} />
                                         <Route path="/login" element={<Navigate replace to={'/home'} />} />
                                     </Routes>
                                 </Container>

@@ -44,6 +44,11 @@ Playground for React based app
 * (OIDC) For redirect URI, select platform as (Web), then enter Redirect URL as (https://{userpool_domain_name}/oauth2/idpresponse). Additional URLs for different types can be provided using the link "Add URI".
 * (OIDC) Go to App Registration > Your App > Certificates and secrets -> Create a new client secret and copy (_Value_, not secret ID). Get the Application/Client ID from the Overview link.
 * Go to manifest file (sidebar menu, last item), enter the App ID under _identifierUris_ in the format _"urn:amazon:cognito:sp:POOLID"_.
+* From Token Configuration (Add Optional Claims), type ID,
+** email
+** family_name
+** given_name
+** preferred_username
 
 .(Cognito/SAML)
 * Under userpool, federated identities (Sign-In experience in the new UI), click on SAML.
@@ -78,6 +83,9 @@ username > sub
 given_name	given_name
 profile	profile
 
+Edit HostedUI and add BGLogin provider.
+Update scopes to "aws.cognito.signin.user.admin", email, profile, openid
+
 ====
 * Go to App Client Settings (App Integration->List->Client in new UI), enable the new Identity.
 * Modify the Callback URLs and Sign Out URLs fields to be your app's login and logout URLs.
@@ -97,3 +105,8 @@ profile	profile
 * In the App Client, enable the Provider.
 * Test using Hosted UI.
 ** First time there was error, _The signed in user 'user@email' is not assigned to a role for the application_. (https://stackoverflow.com/questions/37062964/azure-ad-exception-aadsts50105-the-signed-in-user-is-not-assigned-to-a-role). To fix the error, under AzureAD, under the Apps Properties, change the property _Assignment required?_ to _No_ (default is yes).
+
+== Debug
+* https://localhost -> http://localhost
+* "..Invalid+ProviderName/Username+combination.." (Add the Optional Claims under Azure AD)
+* "..Token is not from a supported provider of this identity pool." -> Wrong identity pool ID setting in .env.local (parameter store). Get the identity pool id by clicking the edit of related federated identity pool.

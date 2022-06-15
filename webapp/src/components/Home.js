@@ -4,8 +4,6 @@ import DatePicker from "react-datepicker";
 import TableList from "./TableList";
 
 export default function Home(props) {
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(new Date());
     return (
         <>
             <header className="page-header pt-4" >

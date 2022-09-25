@@ -43,7 +43,7 @@ Playground for React based app
 * (SAML) For redirect URI, select platform as (Web or SPA), then enter the Cognito response URL as Redirect URL (Reply URL). (https://{userpool_domain_name}/saml2/idpresponse)
 * (OIDC) For redirect URI, select platform as (Web), then enter Redirect URL as (https://{userpool_domain_name}/oauth2/idpresponse). Additional URLs for different types can be provided using the link "Add URI".
 * (OIDC) Go to App Registration > Your App > Certificates and secrets -> Create a new client secret and copy (_Value_, not secret ID). Get the Application/Client ID from the Overview link.
-* Go to manifest file (sidebar menu, last item), enter the App ID under _identifierUris_ in the format _"urn:amazon:cognito:sp:POOLID"_.
+* Go to manifest file (sidebar menu, last item), enter the App ID under _identifierUris_ in the format _"urn:amazon:cognito:sp:POOLID"_ (as string in double quotes).
 * From Token Configuration (Add Optional Claims), type ID,
 ** email
 ** family_name
@@ -67,9 +67,9 @@ http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress -> Email
 
 .(Cognito/OIDC)
 * Under userpool, federated identities (Sign-In experience in the new UI), click on OIDC.
-* Enter the App ID (from Overview) and secret (Generated in step above). Provide a friendly name for this identity.
+* Enter the App ID (for Client ID) and Client secret (Generated in step above). Provide a friendly name for this identity.
 * Enter any additional scopes (openid profile email).
-* For attributes, select auto option (with GET) and provide the Issuer URL as, https://login.microsoftonline.com/{tenant_id}/v2.0. Get the tenant ID from AzureAD (BluGraph), under properties link. Other options are _common, organizations, consumers_. For old UI "Run Discovery", for new UI, just submit.
+* For attributes, select auto option (with GET) and provide the Issuer URL as, https://login.microsoftonline.com/{tenant_id}/v2.0. Get the tenant ID from AzureAD (BluGraph), under properties menu. Other options are _common, organizations, consumers_. For old UI "Run Discovery", for new UI, just submit.
 ** https://docs.microsoft.com/en-us/azure/app-service/configure-authentication-provider-aad
 ** https://docs.microsoft.com/en-us/powerapps/maker/portals/configure/configure-openid-settings
 ** https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-oidc-idp.html
@@ -84,11 +84,10 @@ given_name	given_name
 profile	profile
 
 Edit HostedUI and add BGLogin provider.
-Update scopes to "aws.cognito.signin.user.admin", email, profile, openid
-
 ====
 * Go to App Client Settings (App Integration->List->Client in new UI), enable the new Identity.
 * Modify the Callback URLs and Sign Out URLs fields to be your app's login and logout URLs.
+* Update scopes to "aws.cognito.signin.user.admin", email, profile, openid
 * To test use the Hosted UI.
 
 === Enterprise App
@@ -111,3 +110,4 @@ Update scopes to "aws.cognito.signin.user.admin", email, profile, openid
 * https://localhost -> http://localhost
 * "..Invalid+ProviderName/Username+combination.." (Add the Optional Claims under Azure AD)
 * "..Token is not from a supported provider of this identity pool." -> Wrong identity pool ID setting in .env.local (parameter store). Get the identity pool id by clicking the edit of related federated identity pool.
+* "..redirect url mismatch" -> The ENV var (used by amplify config) set inside the webapp buildspec file was wrong, eg, c11wl instead of pubc11wl.

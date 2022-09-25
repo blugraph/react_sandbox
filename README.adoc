@@ -111,3 +111,4 @@ Edit HostedUI and add BGLogin provider.
 * "..Invalid+ProviderName/Username+combination.." (Add the Optional Claims under Azure AD)
 * "..Token is not from a supported provider of this identity pool." -> Wrong identity pool ID setting in .env.local (parameter store). Get the identity pool id by clicking the edit of related federated identity pool.
 * "..redirect url mismatch" -> The ENV var (used by amplify config) set inside the webapp buildspec file was wrong, eg, c11wl instead of pubc11wl.
+* Issue with OAUth SignOut. (Required String parameter 'redirect_uri' is not present) -> Under userpool->app_client->HostedUI config, add SignOut urls.

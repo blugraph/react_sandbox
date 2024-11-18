@@ -5,7 +5,7 @@ import { Amplify } from 'aws-amplify';
 import { Authenticator } from '@aws-amplify/ui-react';
 import { BrowserRouter } from 'react-router-dom'
 import Layout from './Components/Layout/Layout'
-import awsExports from './aws-exports';
+import awsExports from './aws-exports-v5';
 
 Amplify.configure(awsExports);
 
@@ -14,9 +14,9 @@ export default function App() {
     <Authenticator>
       {({ signOut, user }) => (
         <main>
-      <BrowserRouter>
-        <Layout />
-      </BrowserRouter>
+          <BrowserRouter>
+            <Layout />
+          </BrowserRouter>
           <button onClick={signOut}>Sign out</button>
         </main>
       )}

@@ -5,7 +5,7 @@ import { Amplify } from 'aws-amplify';
 import { Authenticator } from '@aws-amplify/ui-react';
 import { BrowserRouter } from 'react-router-dom'
 import Layout from './Components/Layout/Layout'
-import awsExports from './aws-exports-v5';
+import awsExports from './aws-exports.js';
 
 Amplify.configure(awsExports);
 
